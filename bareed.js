@@ -14,7 +14,6 @@ class Point {
     this.x = x;
     this.y = y;
   }
-
   distanceTo = point => {
     let xDelta = this.x - point.x;
     let yDelta = this.y - point.y;
@@ -43,18 +42,30 @@ class Point {
  **********************************************************/
 class Wallet {
   // implement Wallet!
-  constructor(money = 0) {}
+  constructor(money = 0) {
+    this.money = money; //this will allow us to modefy the init value which=0
+  }
 
-  credit = amount => {};
+  credit = amount => {
+    this.money += amount;
+    //we didn't add (this) to amount because it is the argument
+    //of the func this says "what ever you'll find in
+    //(amount argument) assign it to the "money" property
+    //that inside Wallet obj
+  };
 
-  debit = amount => {};
+  debit = amount => {
+    this.money -= amount;
+  };
 }
-
+let wallet = new Wallet(7);
+//here the result will be subtracting once and adding once
 /**********************************************************
  * Person: defines a person with a name (and feelings)
  *
  * name: name of said person
  * location: a Point
+ * [[[[[[are we creating an object of class point inside the person class? or inhereting?]]]]]]
  * wallet: a Wallet instance initially with 0.
  *
  * moveTo(point): updates the `location` to `point`
@@ -62,9 +73,17 @@ class Wallet {
  * let person = new Person(name, x, y);
  **********************************************************/
 class Person {
-  // implement Person!
-}
+  constructor(name, x, y) {
+    this.name = name;
+    this.location = new Point(x, y);
+  }
+  wallet = new Wallet();
+  //why do we write it out of constructor?
+  //we wont make changes manually,it'll change
+  //depending on the calculations that happens in the wallet class
 
+  moveTo = goToLocation => (this.location = goToLocation);
+}
 /**********************************************************
  * Vendor: defines a vendor
  * Subclasses Person
@@ -80,8 +99,17 @@ class Person {
  *
  * new vendor = new Vendor(name, x, y);
  **********************************************************/
-class Vendor {
+class Vendor extends Person {
   // implement Vendor!
+  range = 5;
+  //because they has a static value we don't need constructor
+  price = 1;
+  sellTo = (customer, numberOfIceCreams) => {
+    const cost = numberOfIceCreams * this.price;
+    customer.wallet.debit(cost);
+    this.wallet.credit(cost);
+    this.moveTo(customer.location);
+  };
 }
 
 /**********************************************************
@@ -100,8 +128,21 @@ class Vendor {
  *
  * new customer = new Customer(name, x, y);
  **********************************************************/
-class Customer {
+class Customer extends Person {
   // implement Customer!
+  wallet = new Wallet(10);
+  _isInRange = vendor =>
+    this.location.distanceTo(vendor.location) < vendor.range;
+  _haveEnoughMoney = (vendor, numberOfIceCreams) =>
+    this.wallet.money >= numberOfIceCreams * vendor.price;
+  requestIceCream = (vendor, numberOfIceCreams) => {
+    if (
+      this._isInRange(vendor) &&
+      this._haveEnoughMoney(vendor, numberOfIceCreams)
+    ) {
+    }
+    vendor.sellTo(this);
+  };
 }
 
 export { Point, Wallet, Person, Customer, Vendor };
